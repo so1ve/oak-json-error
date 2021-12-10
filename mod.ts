@@ -1,1 +1,1 @@
-export * from './middleware.ts'
+export * from './src/middleware.ts'
