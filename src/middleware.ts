@@ -1,4 +1,4 @@
-import { Middleware } from "https://deno.land/x/oak/mod.ts";
+import { Middleware } from "https://deno.land/x/oak@v10.1.1/mod.ts";
 
 type Formatter = <T extends Error>(err: T) => any;
 interface JsonErrorMiddlewareOptions {
