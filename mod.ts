@@ -1,1 +1,1 @@
-export { default } from './src/middleware.ts'
+export { jsonErrorMiddleware } from './src/middleware.ts'
