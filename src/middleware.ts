@@ -1,20 +1,15 @@
-import { Middleware } from "https://deno.land/x/oak@v10.1.1/mod.ts";
+import { Middleware } from "https://deno.land/x/oak@v8.0.0/mod.ts";
 
 type Formatter = <T extends Error>(err: T) => any;
 interface JsonErrorMiddlewareOptions {
   format?: Formatter | null;
 }
 
-export default function createJsonErrorMiddleware(
-  options: JsonErrorMiddlewareOptions,
-) {
-  /**
-   * Apply all ordered formatting functions to original error.
-   * @param  {Error} err The thrown error.
-   * @return {Object}    The JSON serializable formatted object.
-   */
+export const jsonErrorMiddleware = <
+  T extends Middleware = Middleware,
+>({ format }: JsonErrorMiddlewareOptions): T => {
   const formatError = (err: any) => {
-    return options.format ? options.format(err) : err;
+    return format ? format(err) : err;
   };
 
   const shouldThrow404 = (status?: number, body?: unknown) => {
@@ -35,5 +30,5 @@ export default function createJsonErrorMiddleware(
         ctx.response.status = err.status || err.statusCode || 500;
       });
   };
-  return jsonError;
-}
+  return jsonError as T;
+};
