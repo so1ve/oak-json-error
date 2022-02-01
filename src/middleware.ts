@@ -1,4 +1,4 @@
-import { Middleware } from "https://deno.land/x/oak@v8.0.0/mod.ts";
+import { Middleware } from "https://deno.land/x/oak@v10.2.0/mod.ts";
 
 type Formatter = <T extends Error>(err: T) => any;
 interface JsonErrorMiddlewareOptions {
@@ -6,7 +6,7 @@ interface JsonErrorMiddlewareOptions {
 }
 
 export const jsonErrorMiddleware = <
-  T extends Middleware = Middleware,
+  T = Middleware,
 >({ format }: JsonErrorMiddlewareOptions): T => {
   const formatError = (err: any) => {
     return format ? format(err) : err;
@@ -16,19 +16,17 @@ export const jsonErrorMiddleware = <
     return !status || (status === 404 && body == null);
   };
 
-  const jsonError: Middleware = (ctx, next) => {
-    return next()
-      .then(() => {
-        // future proof status
-        shouldThrow404(ctx.response.status, ctx.response.body) &&
-          ctx.throw(404);
-      })
-      .catch((err) => {
-        // Format and set body
-        ctx.response.body = formatError(err) || {};
-        // Set status
-        ctx.response.status = err.status || err.statusCode || 500;
-      });
+  const core: Middleware = async (ctx, next) => {
+    try {
+      await next();
+      // future proof status
+      shouldThrow404(ctx.response.status, ctx.response.body) &&
+        ctx.throw(404);
+    } catch (err) {
+      ctx.response.body = formatError(err) || {};
+      // Set status
+      ctx.response.status = err.status || err.statusCode || 500;
+    }
   };
-  return jsonError as T;
+  return core as unknown as T;
 };
